@@ -5,23 +5,30 @@ import seaborn as sns
 sns.set(style="whitegrid")
 
 class Perceptron:
-    def __init__(self, lr=0.1, epochs=20):
+    def __init__(self, lr=0.1):
         self.lr = lr
-        self.epochs = epochs
 
     def fit(self, X, y):
         self.w = np.zeros(X.shape[1])
         self.b = 0
         self.errors = []
-
-        for _ in range(self.epochs):
+        self.epochs = 0
+        while True:
             error_count = 0
+            self.epochs += 1
+            print(f"\nEpoch {self.epochs}")
+            print("Input1 Input2 Target Predicted Error    Weights")
+            print("-"*60)
             for xi, target in zip(X, y):
                 y_pred = self.predict(xi)
                 update = self.lr * (target - y_pred)
                 self.w += update * xi
                 self.b += update
                 error_count += int(update != 0)
+                print(f"{str(xi[0]):6} {str(xi[1]):6} {target:7} {y_pred:9} {(target - y_pred):6}   {self.w}")
+            if error_count == 0:
+                print("converged")
+                break 
             self.errors.append(error_count)
 
     def net_input(self, X):
@@ -64,17 +71,17 @@ plt.ylabel("Errors")
 plt.show()
 
 # ---------- XOR ----------
-X_xor = np.array([[0,0],[0,1],[1,0],[1,1]])
-y_xor = np.array([0,1,1,0])
+# X_xor = np.array([[0,0],[0,1],[1,0],[1,1]])
+# y_xor = np.array([0,1,1,0])
 
-p_xor = Perceptron()
-p_xor.fit(X_xor, y_xor)
+# p_xor = Perceptron()
+# p_xor.fit(X_xor, y_xor)
 
-plot_decision_boundary(X_xor, y_xor, p_xor,
-                       "Perceptron for XOR")
+# plot_decision_boundary(X_xor, y_xor, p_xor,
+#                       "Perceptron for XOR")
 
-plt.plot(p_xor.errors, marker='o')
-plt.title("Training Errors - XOR")
-plt.xlabel("Epochs")
-plt.ylabel("Errors")
-plt.show()
+# plt.plot(p_xor.errors, marker='o')
+# plt.title("Training Errors - XOR")
+# plt.xlabel("Epochs")
+# plt.ylabel("Errors")
+# plt.show()
