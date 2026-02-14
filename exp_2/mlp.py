@@ -20,8 +20,18 @@ y = np.array([[0],
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
-def sigmoid_derivative(z):
-    return z * (1 - z)
+def sigmoid_derivative(a):
+    return a * (1 - a)
+
+# Plot Sigmoid Function
+x_vals = np.linspace(-10, 10, 100)
+plt.figure()
+plt.plot(x_vals, sigmoid(x_vals))
+plt.title("Sigmoid Activation Function")
+plt.xlabel("Input")
+plt.ylabel("Output")
+plt.grid()
+plt.show()
 
 # -----------------------------
 # 3. Initialize Parameters
@@ -45,7 +55,7 @@ losses = []
 accuracies = []
 
 # -----------------------------
-# 4. Training (Backpropagation)
+# 4. Training
 # -----------------------------
 for epoch in range(epochs):
 
@@ -56,7 +66,7 @@ for epoch in range(epochs):
     z2 = np.dot(a1, W2) + b2
     y_pred = sigmoid(z2)
 
-    # Loss (Binary Cross Entropy)
+    # Binary Cross Entropy Loss
     loss = -np.mean(y*np.log(y_pred+1e-8) + (1-y)*np.log(1-y_pred+1e-8))
     losses.append(loss)
 
@@ -64,6 +74,14 @@ for epoch in range(epochs):
     predictions = (y_pred > 0.5).astype(int)
     accuracy = np.mean(predictions == y)
     accuracies.append(accuracy)
+
+    # Print at intervals
+    if epoch % 1000 == 0:
+        print(f"\nEpoch {epoch}")
+        for i in range(len(X)):
+            print(f"Input: {X[i]}, Target: {y[i][0]}, "
+                  f"Predicted: {y_pred[i][0]:.4f}, "
+                  f"Loss: {loss:.4f}")
 
     # Backpropagation
     dz2 = y_pred - y
@@ -74,17 +92,38 @@ for epoch in range(epochs):
     dW1 = np.dot(X.T, dz1)
     db1 = np.sum(dz1, axis=0, keepdims=True)
 
-    # Update Weights
+    # Update weights
     W2 -= learning_rate * dW2
     b2 -= learning_rate * db2
     W1 -= learning_rate * dW1
     b1 -= learning_rate * db1
 
 # -----------------------------
-# 5. Final Predictions
+# 5. Final Evaluation
 # -----------------------------
-print("Final Predictions:")
-print(predictions)
+final_predictions = sigmoid(np.dot(sigmoid(np.dot(X, W1)+b1), W2)+b2)
+rounded_predictions = (final_predictions > 0.5).astype(int)
+training_accuracy = np.mean(rounded_predictions == y)
+
+# Confusion Matrix
+TP = np.sum((rounded_predictions == 1) & (y == 1))
+TN = np.sum((rounded_predictions == 0) & (y == 0))
+FP = np.sum((rounded_predictions == 1) & (y == 0))
+FN = np.sum((rounded_predictions == 0) & (y == 1))
+
+confusion_matrix = np.array([[TN, FP],
+                             [FN, TP]])
+
+print("\nFinal Predictions (Raw):")
+print(final_predictions)
+
+print("\nRounded Predictions:")
+print(rounded_predictions)
+
+print("\nTraining Accuracy:", training_accuracy)
+
+print("\nConfusion Matrix:")
+print(confusion_matrix)
 
 # -----------------------------
 # 6. Plot Loss vs Epoch
@@ -94,6 +133,7 @@ plt.plot(losses)
 plt.title("Loss vs Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
+plt.grid()
 plt.show()
 
 # -----------------------------
@@ -104,21 +144,11 @@ plt.plot(accuracies)
 plt.title("Accuracy vs Epoch")
 plt.xlabel("Epoch")
 plt.ylabel("Accuracy")
+plt.grid()
 plt.show()
 
 # -----------------------------
-# 8. Plot Sigmoid Function
-# -----------------------------
-x_vals = np.linspace(-10, 10, 100)
-plt.figure()
-plt.plot(x_vals, sigmoid(x_vals))
-plt.title("Sigmoid Activation Function")
-plt.xlabel("Input")
-plt.ylabel("Output")
-plt.show()
-
-# -----------------------------
-# 9. Decision Boundary
+# 8. Decision Boundary
 # -----------------------------
 xx, yy = np.meshgrid(np.linspace(-0.5,1.5,200),
                      np.linspace(-0.5,1.5,200))
@@ -134,4 +164,6 @@ plt.figure()
 plt.contourf(xx, yy, preds > 0.5, alpha=0.5)
 plt.scatter(X[:,0], X[:,1], c=y.flatten(), s=100)
 plt.title("MLP Decision Boundary (XOR)")
+plt.xlabel("Input 1")
+plt.ylabel("Input 2")
 plt.show()
